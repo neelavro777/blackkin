@@ -4,8 +4,11 @@ import "./globals.css";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CartProvider } from "@/components/cart/CartProvider";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { Toaster } from "@/components/ui/sonner";
 
-const montserrat = Montserrat({subsets:['latin'],variable:'--font-sans'});
+const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,10 +21,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Blackkin",
-  description: "Your ecommerce platform",
-  icons: {
-    icon: "/convex.svg",
+  title: {
+    template: "%s | Blackkin",
+    default: "Blackkin — Premium Essentials",
+  },
+  description:
+    "Premium quality underwear and everyday essentials. Free shipping on orders above ৳999.",
+  openGraph: {
+    siteName: "Blackkin",
+    type: "website",
   },
 };
 
@@ -32,12 +40,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("font-sans", montserrat.variable)}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ConvexClientProvider>
-        
-        <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <CartProvider>
+              {children}
+              <CartDrawer />
+              <Toaster />
+            </CartProvider>
+          </TooltipProvider>
         </ConvexClientProvider>
       </body>
     </html>

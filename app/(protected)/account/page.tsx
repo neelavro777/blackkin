@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import {
   Card,
@@ -37,7 +38,7 @@ export default function AccountPage() {
       <main className="max-w-5xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-semibold mb-8">Your Account</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Profile</CardTitle>
@@ -76,6 +77,23 @@ export default function AccountPage() {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Quick Links</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Link href="/account/orders">
+              <Button variant="ghost">My Orders</Button>
+            </Link>
+            <Link href="/account/wishlist">
+              <Button variant="ghost">My Wishlist</Button>
+            </Link>
+            <Link href="/products">
+              <Button variant="ghost">Shop</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </main>
     </>
   );

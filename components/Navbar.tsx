@@ -6,6 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { CartIcon } from "@/components/cart/CartIcon";
 
 export function Navbar() {
   const router = useRouter();
@@ -29,32 +30,38 @@ export function Navbar() {
 
   return (
     <header className="border-b">
-      <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-sm">
-          Blackkin
+      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+        <Link href="/" className="font-semibold text-sm tracking-wide">
+          BLACKKIN
         </Link>
 
-        <nav className="flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-6 text-sm">
+          <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors">
+            Shop
+          </Link>
+        </nav>
+
+        <div className="flex items-center gap-1">
+          <CartIcon />
+
           {isPending ? null : session ? (
             <>
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {session.user.name || session.user.email?.split("@")[0]}
-              </span>
               {currentUser?.role === "admin" && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => router.push("/admin")}
                 >
-                  Admin Panel
+                  Admin
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/account")}
+                className="hidden sm:flex"
               >
-                My Account
+                {session.user.name || session.user.email?.split("@")[0]}
               </Button>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 Sign Out
@@ -65,9 +72,8 @@ export function Navbar() {
               <Link href={loginHref}>Sign In</Link>
             </Button>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
 }
-

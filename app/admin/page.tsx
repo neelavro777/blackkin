@@ -1,53 +1,66 @@
-"use client";
-
-import { useQuery } from "convex/react";
+import { fetchAuthQuery } from "@/lib/auth-server";
 import { api } from "@/convex/_generated/api";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function AdminPage() {
-  const router = useRouter();
-  const { data: session, isPending: sessionPending } = authClient.useSession();
-  const currentUser = useQuery(
-    api.users.getCurrentUserWithRole,
-    session ? {} : "skip"
-  );
+export const metadata = { title: "Dashboard" };
 
-  useEffect(() => {
-    if (sessionPending) return;
+export default async function AdminDashboardPage() {
+  const stats = await fetchAuthQuery(api.dashboard.getStats);
 
-    // Not logged in → send to login page with ?next=/admin
-    if (!session) {
-      router.replace("/login?next=/admin");
-      return;
-    }
+  const statCards = [
+    { label: "Total Customers", value: stats.totalCustomers },
+    { label: "Total Products", value: stats.totalProducts },
+    { label: "Total Categories", value: stats.totalCategories },
+    { label: "Total Orders", value: stats.orders.total },
+  ];
 
-    // Logged in but role still loading
-    if (currentUser === undefined) return;
-
-    // Logged in but not an admin
-    if (currentUser?.role !== "admin") {
-      router.replace("/");
-    }
-  }, [sessionPending, session, currentUser, router]);
-
-  // Show nothing while determining access
-  if (sessionPending || !session || currentUser === undefined) return null;
-
-  // Definitively not an admin — useEffect handles redirect
-  if (currentUser?.role !== "admin") return null;
+  const orderBreakdown = [
+    { label: "Pending", value: stats.orders.pending },
+    { label: "Processed", value: stats.orders.processed },
+    { label: "Shipped", value: stats.orders.shipped },
+    { label: "Delivered", value: stats.orders.delivered },
+    { label: "Cancelled", value: stats.orders.cancelled },
+  ];
 
   return (
-    <>
-      <Navbar />
-      <main className="max-w-5xl mx-auto px-6 py-12">
-        <h1 className="text-2xl font-semibold mb-2">Admin Panel</h1>
-        <p className="text-muted-foreground text-sm">
-          Admin features coming soon. Use the Convex dashboard to manage data.
-        </p>
-      </main>
-    </>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <p className="text-muted-foreground text-sm mt-1">Overview of your store</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((card) => (
+          <Card key={card.label}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{card.value.toLocaleString()}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Order Breakdown</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {orderBreakdown.map((item) => (
+            <Card key={item.label}>
+              <CardHeader className="pb-1 pt-4 px-4">
+                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {item.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <p className="text-2xl font-bold">{item.value.toLocaleString()}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
