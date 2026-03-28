@@ -54,13 +54,6 @@ type PlatformColor = {
   sortOrder: number;
 };
 
-type PlatformFabric = {
-  _id: Id<"platformFabrics">;
-  _creationTime: number;
-  name: string;
-  sortOrder: number;
-};
-
 // ─── Sizes Section ────────────────────────────────────────────
 
 type SizeDialogState =
@@ -482,190 +475,6 @@ function ColorsTab() {
   );
 }
 
-// ─── Fabrics Section ──────────────────────────────────────────
-
-type FabricDialogState =
-  | { mode: "closed" }
-  | { mode: "create" }
-  | { mode: "edit"; fabric: PlatformFabric };
-
-function FabricDialog({
-  state,
-  onClose,
-}: {
-  state: FabricDialogState;
-  onClose: () => void;
-}) {
-  const isEdit = state.mode === "edit";
-  const initial = isEdit ? state.fabric : null;
-
-  const [name, setName] = useState(initial?.name ?? "");
-  const [sortOrder, setSortOrder] = useState(String(initial?.sortOrder ?? 0));
-  const [loading, setLoading] = useState(false);
-
-  const createMutation = useMutation(api.platformConfig.createFabric);
-  const updateMutation = useMutation(api.platformConfig.updateFabric);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (isEdit) {
-        await updateMutation({
-          id: state.fabric._id,
-          name,
-          sortOrder: Number(sortOrder),
-        });
-        toast.success("Fabric updated");
-      } else {
-        await createMutation({ name, sortOrder: Number(sortOrder) });
-        toast.success("Fabric created");
-      }
-      onClose();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{isEdit ? "Edit Fabric" : "New Fabric"}</DialogTitle>
-      </DialogHeader>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
-          <Label htmlFor="fabric-name">Name</Label>
-          <Input
-            id="fabric-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Cotton, Linen, Polyester"
-            required
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="fabric-sort">Sort Order</Label>
-          <Input
-            id="fabric-sort"
-            type="number"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          />
-        </div>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : isEdit ? "Update" : "Create"}
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  );
-}
-
-function FabricsTab() {
-  const fabrics = useQuery(api.platformConfig.listFabrics);
-  const deleteMutation = useMutation(api.platformConfig.deleteFabric);
-
-  const [dialogState, setDialogState] = useState<FabricDialogState>({ mode: "closed" });
-  const [deleteTarget, setDeleteTarget] = useState<PlatformFabric | null>(null);
-  const [deletingId, setDeletingId] = useState<Id<"platformFabrics"> | null>(null);
-
-  async function handleDelete(fabric: PlatformFabric) {
-    setDeletingId(fabric._id);
-    setDeleteTarget(null);
-    try {
-      await deleteMutation({ id: fabric._id });
-      toast.success("Fabric deleted");
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setDeletingId(null);
-    }
-  }
-
-  const isOpen = dialogState.mode !== "closed";
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setDialogState({ mode: "create" })}>New Fabric</Button>
-      </div>
-
-      <Dialog open={isOpen} onOpenChange={(open) => !open && setDialogState({ mode: "closed" })}>
-        {isOpen && (
-          <FabricDialog state={dialogState} onClose={() => setDialogState({ mode: "closed" })} />
-        )}
-      </Dialog>
-
-      <AlertDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete fabric &quot;{deleteTarget?.name}&quot;?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteTarget && handleDelete(deleteTarget)}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {fabrics === undefined ? (
-        <p className="text-muted-foreground text-sm">Loading...</p>
-      ) : fabrics.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No fabrics yet.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Sort Order</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fabrics.map((fabric) => (
-              <TableRow key={fabric._id}>
-                <TableCell className="font-medium">{fabric.name}</TableCell>
-                <TableCell>{fabric.sortOrder}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setDialogState({ mode: "edit", fabric })}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    disabled={deletingId === fabric._id}
-                    onClick={() => setDeleteTarget(fabric)}
-                  >
-                    {deletingId === fabric._id ? "Deleting..." : "Delete"}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </div>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────
 
 export default function SizesPage() {
@@ -674,7 +483,7 @@ export default function SizesPage() {
       <div>
         <h1 className="text-2xl font-semibold">Platform Configuration</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Manage sizes, colors, and fabrics available across your store
+          Manage sizes and colors available across your store
         </p>
       </div>
 
@@ -682,16 +491,12 @@ export default function SizesPage() {
         <TabsList>
           <TabsTrigger value="sizes">Sizes</TabsTrigger>
           <TabsTrigger value="colors">Colors</TabsTrigger>
-          <TabsTrigger value="fabrics">Fabrics</TabsTrigger>
         </TabsList>
         <TabsContent value="sizes" className="mt-4">
           <SizesTab />
         </TabsContent>
         <TabsContent value="colors" className="mt-4">
           <ColorsTab />
-        </TabsContent>
-        <TabsContent value="fabrics" className="mt-4">
-          <FabricsTab />
         </TabsContent>
       </Tabs>
     </div>

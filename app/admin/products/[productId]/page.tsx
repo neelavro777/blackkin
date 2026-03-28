@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, Trash2, Plus, ArrowLeft, X } from "lucide-react";
 import Link from "next/link";
@@ -37,7 +36,6 @@ interface VariantRow {
   id?: Id<"productVariants">;
   size: string;
   color: string;
-  fabric: string;
   sku: string;
   stock: number;
   priceOverride: string;
@@ -53,7 +51,6 @@ export default function EditProductPage() {
   const tags = useQuery(api.tags.list);
   const sizes = useQuery(api.platformConfig.listSizes);
   const colors = useQuery(api.platformConfig.listColors);
-  const fabrics = useQuery(api.platformConfig.listFabrics);
 
   const updateProduct = useMutation(api.products.update);
   const updateVariants = useMutation(api.products.updateVariants);
@@ -66,8 +63,6 @@ export default function EditProductPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [fabricAndCare, setFabricAndCare] = useState("");
-  const [shippingInfo, setShippingInfo] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [basePrice, setBasePrice] = useState("");
   const [variants, setVariants] = useState<VariantRow[]>([]);
@@ -84,8 +79,6 @@ export default function EditProductPage() {
     setName(product.name);
     setSlug(product.slug);
     setDescription(product.description);
-    setFabricAndCare(product.fabricAndCare ?? "");
-    setShippingInfo(product.shippingInfo ?? "");
     setCategoryId(product.categoryId);
     setBasePrice(product.basePrice.toString());
     setMedia(product.media);
@@ -95,9 +88,8 @@ export default function EditProductPage() {
         id: variant._id,
         size: variant.size,
         color: variant.color ?? "",
-        fabric: variant.fabric ?? "",
         sku: variant.sku ?? "",
-        stock: variant.stock,
+        stock: variant.stock ?? 0,
         priceOverride: variant.priceOverride?.toString() ?? "",
       }))
     );
@@ -137,8 +129,6 @@ export default function EditProductPage() {
         name,
         slug: slug || toSlug(name),
         description,
-        fabricAndCare: fabricAndCare || undefined,
-        shippingInfo: shippingInfo || undefined,
         categoryId: categoryId as Id<"categories">,
         basePrice: parseFloat(basePrice),
         media,
@@ -149,7 +139,6 @@ export default function EditProductPage() {
           id: v.id,
           size: v.size,
           color: v.color || undefined,
-          fabric: v.fabric || undefined,
           sku: v.sku || undefined,
           stock: v.stock,
           priceOverride: v.priceOverride ? parseFloat(v.priceOverride) : undefined,
@@ -308,14 +297,6 @@ export default function EditProductPage() {
             <Label>Description</Label>
             <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label>Fabric & Care</Label>
-            <Textarea rows={2} value={fabricAndCare} onChange={(e) => setFabricAndCare(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Shipping Info</Label>
-            <Textarea rows={2} value={shippingInfo} onChange={(e) => setShippingInfo(e.target.value)} />
-          </div>
         </CardContent>
       </Card>
 
@@ -324,7 +305,7 @@ export default function EditProductPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Variants</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => setVariants((prev) => [...prev, { size: "", color: "", fabric: "", sku: "", stock: 0, priceOverride: "" }])}>
+            <Button variant="outline" size="sm" onClick={() => setVariants((prev) => [...prev, { size: "", color: "", sku: "", stock: 0, priceOverride: "" }])}>
               <Plus className="h-4 w-4 mr-1" /> Add Variant
             </Button>
           </div>
@@ -350,18 +331,12 @@ export default function EditProductPage() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Fabric</Label>
-                <Select value={v.fabric || "_none"} onValueChange={(val) => setVariants((prev) => prev.map((r, idx) => idx === i ? { ...r, fabric: val === "_none" ? "" : val } : r))}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Any" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_none">Any</SelectItem>
-                    {(fabrics ?? []).map((f) => <SelectItem key={f._id} value={f.name}>{f.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Stock</Label>
+                <Input className="h-8 text-xs" type="number" min="0" step="1" value={v.stock} onChange={(e) => setVariants((prev) => prev.map((r, idx) => idx === i ? { ...r, stock: parseInt(e.target.value) || 0 } : r))} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Stock</Label>
-                <Input className="h-8 text-xs" type="number" min="0" value={v.stock} onChange={(e) => setVariants((prev) => prev.map((r, idx) => idx === i ? { ...r, stock: parseInt(e.target.value) || 0 } : r))} />
+                <Label className="text-xs">SKU</Label>
+                <Input className="h-8 text-xs" value={v.sku} onChange={(e) => setVariants((prev) => prev.map((r, idx) => idx === i ? { ...r, sku: e.target.value } : r))} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Override ৳</Label>

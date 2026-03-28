@@ -27,11 +27,6 @@ export default defineSchema({
     sortOrder: v.number(),
   }).index("by_name", ["name"]),
 
-  platformFabrics: defineTable({
-    name: v.string(), // e.g. "Cotton", "Bamboo", "Modal"
-    sortOrder: v.number(),
-  }).index("by_name", ["name"]),
-
   // ─── CATEGORIES ──────────────────────────────────────────
   categories: defineTable({
     name: v.string(),
@@ -59,8 +54,6 @@ export default defineSchema({
     name: v.string(),
     slug: v.string(),
     description: v.string(),
-    fabricAndCare: v.optional(v.string()),
-    shippingInfo: v.optional(v.string()),
     categoryId: v.id("categories"),
     basePrice: v.number(), // price in BDT (whole number)
     isActive: v.boolean(),
@@ -93,7 +86,6 @@ export default defineSchema({
     productId: v.id("products"),
     size: v.string(),
     color: v.optional(v.string()),
-    fabric: v.optional(v.string()),
     sku: v.optional(v.string()),
     stock: v.number(),
     priceOverride: v.optional(v.number()),

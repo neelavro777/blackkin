@@ -20,7 +20,6 @@ const variantValidator = v.object({
   productId: v.id("products"),
   size: v.string(),
   color: v.optional(v.string()),
-  fabric: v.optional(v.string()),
   sku: v.optional(v.string()),
   stock: v.number(),
   priceOverride: v.optional(v.number()),
@@ -32,8 +31,6 @@ const productWithPricingValidator = v.object({
   name: v.string(),
   slug: v.string(),
   description: v.string(),
-  fabricAndCare: v.optional(v.string()),
-  shippingInfo: v.optional(v.string()),
   categoryId: v.id("categories"),
   basePrice: v.number(),
   discountedPrice: v.number(),
@@ -113,7 +110,6 @@ export const listFiltered = query({
     maxPrice: v.optional(v.number()),
     size: v.optional(v.string()),
     color: v.optional(v.string()),
-    fabric: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // If filtering by tag, get matching productIds first
@@ -128,8 +124,7 @@ export const listFiltered = query({
 
     // If filtering by variant attributes, find matching productIds
     let variantProductIds: Set<Id<"products">> | null = null;
-    if (args.size || args.color || args.fabric) {
-      let variantQuery = ctx.db.query("productVariants");
+    if (args.size || args.color) {
       if (args.size) {
         // Use index for size filtering - query all then filter
         const sizeVariants = await ctx.db
@@ -141,8 +136,7 @@ export const listFiltered = query({
             .filter(
               (v) =>
                 (!args.size || v.size === args.size) &&
-                (!args.color || v.color === args.color) &&
-                (!args.fabric || v.fabric === args.fabric)
+                (!args.color || v.color === args.color)
             )
             .map((v) => v.productId)
         );
@@ -223,8 +217,6 @@ export const getFeaturedBestSellers = query({
       media: v.array(mediaItemValidator),
       categoryId: v.id("categories"),
       description: v.string(),
-      fabricAndCare: v.optional(v.string()),
-      shippingInfo: v.optional(v.string()),
       tags: v.array(v.object({ _id: v.id("tags"), name: v.string(), slug: v.string() })),
       variants: v.array(variantValidator),
     })
@@ -260,8 +252,6 @@ export const getFeaturedNewArrivals = query({
       media: v.array(mediaItemValidator),
       categoryId: v.id("categories"),
       description: v.string(),
-      fabricAndCare: v.optional(v.string()),
-      shippingInfo: v.optional(v.string()),
       tags: v.array(v.object({ _id: v.id("tags"), name: v.string(), slug: v.string() })),
       variants: v.array(variantValidator),
     })
@@ -304,8 +294,6 @@ export const create = mutation({
     name: v.string(),
     slug: v.string(),
     description: v.string(),
-    fabricAndCare: v.optional(v.string()),
-    shippingInfo: v.optional(v.string()),
     categoryId: v.id("categories"),
     basePrice: v.number(),
     media: v.array(mediaItemValidator),
@@ -313,7 +301,6 @@ export const create = mutation({
       v.object({
         size: v.string(),
         color: v.optional(v.string()),
-        fabric: v.optional(v.string()),
         sku: v.optional(v.string()),
         stock: v.number(),
         priceOverride: v.optional(v.number()),
@@ -363,8 +350,6 @@ export const update = mutation({
     name: v.optional(v.string()),
     slug: v.optional(v.string()),
     description: v.optional(v.string()),
-    fabricAndCare: v.optional(v.string()),
-    shippingInfo: v.optional(v.string()),
     categoryId: v.optional(v.id("categories")),
     basePrice: v.optional(v.number()),
     media: v.optional(v.array(mediaItemValidator)),
@@ -402,7 +387,6 @@ export const updateVariants = mutation({
         id: v.optional(v.id("productVariants")), // if provided = update, else = create
         size: v.string(),
         color: v.optional(v.string()),
-        fabric: v.optional(v.string()),
         sku: v.optional(v.string()),
         stock: v.number(),
         priceOverride: v.optional(v.number()),

@@ -136,7 +136,7 @@ export const create = mutation({
     const order = await ctx.db.get(orderId);
     if (order) await aggregateOrders.insertIfDoesNotExist(ctx, order);
 
-    // Insert order items and decrement stock
+    // Insert order items and decrement color stock
     await Promise.all(
       enrichedItems.map(async (item) => {
         await ctx.db.insert("orderItems", {

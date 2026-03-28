@@ -55,7 +55,6 @@ function ProductsContent() {
   const tagId = searchParams.get("tagId") ?? "";
   const size = searchParams.get("size") ?? "";
   const color = searchParams.get("color") ?? "";
-  const fabric = searchParams.get("fabric") ?? "";
   const minPriceStr = searchParams.get("minPrice") ?? "";
   const maxPriceStr = searchParams.get("maxPrice") ?? "";
   const minPrice = minPriceStr ? Number(minPriceStr) : undefined;
@@ -65,7 +64,6 @@ function ProductsContent() {
   const categories = useQuery(api.categories.list) ?? [];
   const sizes = useQuery(api.platformConfig.listSizes) ?? [];
   const colors = useQuery(api.platformConfig.listColors) ?? [];
-  const fabrics = useQuery(api.platformConfig.listFabrics) ?? [];
   const tags = useQuery(api.tags.list) ?? [];
 
   // Search results — only active when q is non-empty
@@ -86,7 +84,6 @@ function ProductsContent() {
           ...(tagId ? { tagId: tagId as Id<"tags"> } : {}),
           ...(size ? { size } : {}),
           ...(color ? { color } : {}),
-          ...(fabric ? { fabric } : {}),
           ...(minPrice !== undefined ? { minPrice } : {}),
           ...(maxPrice !== undefined ? { maxPrice } : {}),
         }
@@ -103,7 +100,6 @@ function ProductsContent() {
       categories={categories}
       sizes={sizes}
       colors={colors}
-      fabrics={fabrics}
       tags={tags}
     />
   );

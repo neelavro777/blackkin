@@ -42,7 +42,6 @@ interface VariantRow {
   _rowId: string;
   size: string;
   color: string;
-  fabric: string;
   stock: number;
   priceOverride: string;
 }
@@ -76,7 +75,6 @@ export default function NewProductPage() {
   const categories = useQuery(api.categories.listAll);
   const sizes = useQuery(api.platformConfig.listSizes);
   const colors = useQuery(api.platformConfig.listColors);
-  const fabrics = useQuery(api.platformConfig.listFabrics);
   const tags = useQuery(api.tags.list);
 
   // Mutations
@@ -92,13 +90,9 @@ export default function NewProductPage() {
   const [categoryId, setCategoryId] = useState<string>("");
   const [basePrice, setBasePrice] = useState("");
 
-  // ── Content ─────────────────────────────────────────────────
-  const [fabricAndCare, setFabricAndCare] = useState("");
-  const [shippingInfo, setShippingInfo] = useState("");
-
   // ── Variants ────────────────────────────────────────────────
   const [variants, setVariants] = useState<VariantRow[]>([
-    { _rowId: newRowId(), size: "", color: "", fabric: "", stock: 0, priceOverride: "" },
+    { _rowId: newRowId(), size: "", color: "", stock: 0, priceOverride: "" },
   ]);
 
   // ── Media ───────────────────────────────────────────────────
@@ -131,7 +125,7 @@ export default function NewProductPage() {
   function addVariant() {
     setVariants((prev) => [
       ...prev,
-      { _rowId: newRowId(), size: "", color: "", fabric: "", stock: 0, priceOverride: "" },
+      { _rowId: newRowId(), size: "", color: "", stock: 0, priceOverride: "" },
     ]);
   }
 
@@ -218,15 +212,12 @@ export default function NewProductPage() {
         return;
       }
     }
-
     setSubmitting(true);
     try {
       const productId = await createProduct({
         name: name.trim(),
         slug: slug.trim() || slugify(name),
         description: description.trim(),
-        fabricAndCare: fabricAndCare.trim() || undefined,
-        shippingInfo: shippingInfo.trim() || undefined,
         categoryId: categoryId as Id<"categories">,
         basePrice: Number(basePrice),
         media: media.map((m, i) => ({
@@ -237,7 +228,6 @@ export default function NewProductPage() {
         variants: variants.map((v) => ({
           size: v.size,
           color: v.color || undefined,
-          fabric: v.fabric || undefined,
           stock: Number(v.stock),
           priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
         })),
@@ -266,7 +256,6 @@ export default function NewProductPage() {
   }
 
   // We need setFeatured separately — pull the mutation at component level
-  // (defined after hooks, called in submit)
   const setFeatured = useMutation(api.products.setFeatured);
 
   async function useMutationSetFeatured({
@@ -374,36 +363,7 @@ export default function NewProductPage() {
           </CardContent>
         </Card>
 
-        {/* ── 2. Content ── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Content</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fabricAndCare">Fabric & Care</Label>
-              <Textarea
-                id="fabricAndCare"
-                value={fabricAndCare}
-                onChange={(e) => setFabricAndCare(e.target.value)}
-                placeholder="e.g. 100% cotton. Machine wash cold."
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="shippingInfo">Shipping Info</Label>
-              <Textarea
-                id="shippingInfo"
-                value={shippingInfo}
-                onChange={(e) => setShippingInfo(e.target.value)}
-                placeholder="e.g. Ships within 3-5 business days."
-                rows={3}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── 3. Variants ── */}
+        {/* ── 2. Variants ── */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Variants</CardTitle>
@@ -413,7 +373,7 @@ export default function NewProductPage() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {variants.map((variant, idx) => (
+            {variants.map((variant) => (
               <div
                 key={variant._rowId}
                 className="grid grid-cols-2 md:grid-cols-6 gap-3 p-3 border rounded-md items-end"
@@ -447,30 +407,9 @@ export default function NewProductPage() {
                       <SelectValue placeholder="Color" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">— None —</SelectItem>
                       {(colors ?? []).map((c) => (
                         <SelectItem key={c._id} value={c.name}>
                           {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1 col-span-1">
-                  <Label className="text-xs">Fabric</Label>
-                  <Select
-                    value={variant.fabric}
-                    onValueChange={(v) => updateVariant(variant._rowId, "fabric", v)}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Fabric" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">— None —</SelectItem>
-                      {(fabrics ?? []).map((f) => (
-                        <SelectItem key={f._id} value={f.name}>
-                          {f.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -523,7 +462,7 @@ export default function NewProductPage() {
           </CardContent>
         </Card>
 
-        {/* ── 4. Media ── */}
+        {/* ── 3. Media ── */}
         <Card>
           <CardHeader>
             <CardTitle>Media</CardTitle>

@@ -23,11 +23,6 @@ interface Color {
   hexCode?: string;
 }
 
-interface Fabric {
-  _id: string;
-  name: string;
-}
-
 interface Tag {
   _id: string;
   name: string;
@@ -38,7 +33,6 @@ interface ProductFiltersProps {
   categories: Category[];
   sizes: Size[];
   colors: Color[];
-  fabrics: Fabric[];
   tags: Tag[];
 }
 
@@ -59,14 +53,13 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export default function ProductFilters({ categories, sizes, colors, fabrics, tags }: ProductFiltersProps) {
+export default function ProductFilters({ categories, sizes, colors, tags }: ProductFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentCategory = searchParams.get("categoryId") ?? "";
   const currentSize = searchParams.get("size") ?? "";
   const currentColor = searchParams.get("color") ?? "";
-  const currentFabric = searchParams.get("fabric") ?? "";
   const currentTag = searchParams.get("tag") ?? "";
   const currentMinPrice = searchParams.get("minPrice") ?? "";
   const currentMaxPrice = searchParams.get("maxPrice") ?? "";
@@ -179,33 +172,6 @@ export default function ProductFilters({ categories, sizes, colors, fabrics, tag
                 />
               )}
               {c.name}
-            </label>
-          ))}
-        </FilterSection>
-      )}
-
-      {fabrics.length > 0 && (
-        <FilterSection title="Fabric">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="radio"
-              name="fabric"
-              value=""
-              checked={currentFabric === ""}
-              onChange={() => updateParam("fabric", "")}
-            />
-            All
-          </label>
-          {fabrics.map((f) => (
-            <label key={f._id} className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="fabric"
-                value={f.name}
-                checked={currentFabric === f.name}
-                onChange={() => updateParam("fabric", f.name)}
-              />
-              {f.name}
             </label>
           ))}
         </FilterSection>

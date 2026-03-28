@@ -12,7 +12,6 @@ interface Variant {
   _id: Id<"productVariants">;
   size: string;
   color?: string;
-  fabric?: string;
   stock: number;
   priceOverride?: number;
 }

@@ -88,12 +88,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <ProductInfo product={product} platformSizes={platformSizes ?? []} />
         </div>
 
-        {/* Description / Fabric / Shipping accordion */}
+        {/* Description accordion */}
         <div className="mb-12 max-w-2xl">
           <ProductAccordion
             description={product.description ?? ""}
-            fabricAndCare={product.fabricAndCare}
-            shippingInfo={product.shippingInfo}
           />
         </div>
 
