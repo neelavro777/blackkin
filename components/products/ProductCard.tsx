@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
@@ -47,12 +46,10 @@ export default function ProductCard({ product, imageUrl }: ProductCardProps) {
       <Card className="overflow-hidden hover:shadow-md transition-shadow">
         <div className="aspect-square relative overflow-hidden bg-muted">
           {imageUrl ? (
-            <Image
+            <img
               src={imageUrl}
               alt={name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              className="object-cover w-full h-full"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">

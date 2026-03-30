@@ -15,7 +15,6 @@ import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import Image from "next/image";
 import { getGuestCart, removeFromGuestCart, updateGuestCartQuantity } from "@/lib/guest-cart";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -79,7 +78,7 @@ export function CartDrawer() {
                 <div key={item._id} className="flex gap-3">
                   <div className="h-16 w-16 rounded border bg-muted flex-shrink-0 overflow-hidden">
                     {item.imageUrl ? (
-                      <Image
+                      <img
                         src={item.imageUrl}
                         alt={item.productName}
                         width={64}

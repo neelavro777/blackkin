@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -68,12 +67,10 @@ export default function WishlistPage() {
               <Card key={item._id} className="overflow-hidden">
                 <div className="aspect-square relative bg-muted">
                   {item.imageUrl ? (
-                    <Image
+                    <img
                       src={item.imageUrl}
                       alt={item.productName}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover w-full h-full"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">

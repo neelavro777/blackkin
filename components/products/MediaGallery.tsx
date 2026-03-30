@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 
 interface MediaItem {
   storageId: string;
@@ -39,12 +38,10 @@ export default function MediaGallery({ media }: MediaGalleryProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <Image
+            <img
               src={selected.url}
               alt="Product media"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover w-full h-full"
             />
           )
         ) : (
@@ -69,12 +66,10 @@ export default function MediaGallery({ media }: MediaGalleryProps) {
                 item.type === "video" ? (
                   <video src={item.url} className="w-full h-full object-cover" />
                 ) : (
-                  <Image
+                  <img
                     src={item.url}
                     alt={`Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="64px"
+                    className="object-cover w-full h-full"
                   />
                 )
               ) : (
