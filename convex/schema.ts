@@ -254,4 +254,26 @@ export default defineSchema({
     .index("by_productId_and_isApproved", ["productId", "isApproved"])
     .index("by_userId", ["userId"])
     .index("by_userId_and_productId", ["userId", "productId"]),
+
+  // ─── LANDING PAGE CMS ─────────────────────────────────────
+  // One row per image slot. Upserted by admin. Falls back to
+  // static public-folder images on the frontend if absent.
+  landingPageImages: defineTable({
+    slot: v.union(
+      v.literal("hero"),
+      v.literal("lifestyleBanner"),
+      v.literal("splitImage"),
+      v.literal("tech1"),
+      v.literal("tech2"),
+      v.literal("tech3")
+    ),
+    storageId: v.id("_storage"),
+  }).index("by_slot", ["slot"]),
+
+  // Testimonial quotes for the homepage carousel.
+  landingPageQuotes: defineTable({
+    text: v.string(),
+    author: v.string(),
+    isActive: v.boolean(),
+  }),
 });
