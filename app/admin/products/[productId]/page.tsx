@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -70,16 +69,6 @@ export default function EditProductPage() {
   const sizes = useQuery(api.platformConfig.listSizes);
   const colors = useQuery(api.platformConfig.listColors);
 
-  // Featured state from recommendations table (no optimistic updates)
-  const isBestSeller = useQuery(api.recommendations.isProductInSection, {
-    type: "best_sellers",
-    productId,
-  });
-  const isNewArrival = useQuery(api.recommendations.isProductInSection, {
-    type: "new_arrivals",
-    productId,
-  });
-
   // ── Mutations ─────────────────────────────────────────────────
   const updateProduct = useMutation(api.products.update);
   const updateVariants = useMutation(api.products.updateVariants);
@@ -87,8 +76,6 @@ export default function EditProductPage() {
   const toggleActive = useMutation(api.products.toggleActive);
   const removeProduct = useMutation(api.products.remove);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
-  const addAtTop = useMutation(api.recommendations.addAtTop);
-  const removeByProductAndType = useMutation(api.recommendations.removeByProductAndType);
 
   // ── Form state ────────────────────────────────────────────────
   const [name, setName] = useState("");
@@ -107,10 +94,6 @@ export default function EditProductPage() {
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [stockMatrix, setStockMatrix] = useState<StockMatrix>({});
-
-  // ── Featured loading ─────────────────────────────────────────
-  const [togglingBestSeller, setTogglingBestSeller] = useState(false);
-  const [togglingNewArrival, setTogglingNewArrival] = useState(false);
 
   // ── Other UI state ────────────────────────────────────────────
   const [uploading, setUploading] = useState(false);
@@ -207,43 +190,6 @@ export default function EditProductPage() {
       [next[index], next[swap]] = [next[swap], next[index]];
       return next;
     });
-  }
-
-  // ── Featured toggles ──────────────────────────────────────────
-  async function toggleBestSeller() {
-    if (isBestSeller === undefined || togglingBestSeller) return;
-    setTogglingBestSeller(true);
-    try {
-      if (isBestSeller) {
-        await removeByProductAndType({ type: "best_sellers", recommendedProductId: productId });
-        toast.success("Removed from Best Sellers");
-      } else {
-        await addAtTop({ type: "best_sellers", recommendedProductId: productId });
-        toast.success("Added to Best Sellers");
-      }
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to update");
-    } finally {
-      setTogglingBestSeller(false);
-    }
-  }
-
-  async function toggleNewArrival() {
-    if (isNewArrival === undefined || togglingNewArrival) return;
-    setTogglingNewArrival(true);
-    try {
-      if (isNewArrival) {
-        await removeByProductAndType({ type: "new_arrivals", recommendedProductId: productId });
-        toast.success("Removed from New Arrivals");
-      } else {
-        await addAtTop({ type: "new_arrivals", recommendedProductId: productId });
-        toast.success("Added to New Arrivals");
-      }
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to update");
-    } finally {
-      setTogglingNewArrival(false);
-    }
   }
 
   // ── Save ──────────────────────────────────────────────────────
@@ -387,8 +333,6 @@ export default function EditProductPage() {
         <Badge variant={product.isActive ? "default" : "secondary"}>
           {product.isActive ? "Active" : "Inactive"}
         </Badge>
-        {isBestSeller && <Badge variant="default">Best Seller</Badge>}
-        {isNewArrival && <Badge variant="default">New Arrival</Badge>}
       </div>
 
       {/* ── 1. Basic Info ── */}
@@ -572,42 +516,6 @@ export default function EditProductPage() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* ── 5. Featured ── */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Featured</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Toggle to add or remove this product from homepage featured sections.
-          </p>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="bestSeller" className="font-normal cursor-pointer">Best Seller</Label>
-              <div className="flex items-center gap-2">
-                {togglingBestSeller && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                <Switch
-                  id="bestSeller"
-                  checked={isBestSeller ?? false}
-                  disabled={isBestSeller === undefined || togglingBestSeller}
-                  onCheckedChange={toggleBestSeller}
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="newArrival" className="font-normal cursor-pointer">New Arrival</Label>
-              <div className="flex items-center gap-2">
-                {togglingNewArrival && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                <Switch
-                  id="newArrival"
-                  checked={isNewArrival ?? false}
-                  disabled={isNewArrival === undefined || togglingNewArrival}
-                  onCheckedChange={toggleNewArrival}
-                />
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

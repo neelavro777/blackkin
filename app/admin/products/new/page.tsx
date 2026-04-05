@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,7 +50,6 @@ export default function NewProductPage() {
   // Mutations
   const createProduct = useMutation(api.products.create);
   const assignTags = useMutation(api.products.assignTags);
-  const addAtTop = useMutation(api.recommendations.addAtTop);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
   // ── Basic Info ──────────────────────────────────────────────
@@ -118,10 +116,6 @@ export default function NewProductPage() {
 
   // ── Tags ─────────────────────────────────────────────────────
   const [selectedTagIds, setSelectedTagIds] = useState<Set<Id<"tags">>>(new Set());
-
-  // ── Featured ─────────────────────────────────────────────────
-  const [isFeaturedBestSeller, setIsFeaturedBestSeller] = useState(false);
-  const [isFeaturedNewArrival, setIsFeaturedNewArrival] = useState(false);
 
   // ── Submitting ───────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
@@ -219,21 +213,6 @@ export default function NewProductPage() {
 
       if (selectedTagIds.size > 0) {
         await assignTags({ productId, tagIds: Array.from(selectedTagIds) });
-      }
-
-      if (isFeaturedBestSeller) {
-        try {
-          await addAtTop({ type: "best_sellers", recommendedProductId: productId });
-        } catch {
-          toast.warning("Product created but could not add to Best Sellers (may already exist)");
-        }
-      }
-      if (isFeaturedNewArrival) {
-        try {
-          await addAtTop({ type: "new_arrivals", recommendedProductId: productId });
-        } catch {
-          toast.warning("Product created but could not add to New Arrivals (may already exist)");
-        }
       }
 
       toast.success("Product created successfully");
@@ -429,34 +408,6 @@ export default function NewProductPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* ── 5. Featured ── */}
-        <Card>
-          <CardHeader><CardTitle>Featured</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Enabling these adds the product to the top of that section on the landing page.
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="bestSeller" className="font-normal cursor-pointer">Best Seller</Label>
-                <Switch
-                  id="bestSeller"
-                  checked={isFeaturedBestSeller}
-                  onCheckedChange={setIsFeaturedBestSeller}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="newArrival" className="font-normal cursor-pointer">New Arrival</Label>
-                <Switch
-                  id="newArrival"
-                  checked={isFeaturedNewArrival}
-                  onCheckedChange={setIsFeaturedNewArrival}
-                />
-              </div>
-            </div>
           </CardContent>
         </Card>
 

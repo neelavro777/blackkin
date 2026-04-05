@@ -1,71 +1,13 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import ProductCarousel from "@/components/products/ProductCarousel";
-import { fetchAuthQuery } from "@/lib/auth-server";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 
 export const metadata = {
   title: "Blackkin | Premium Comfort",
   description: "Shop premium undergarments. Crafted for lasting comfort and style.",
 };
 
-interface ProductMedia {
-  storageId: Id<"_storage">;
-  type: "image" | "video";
-  sortOrder: number;
-}
-
-interface RawProduct {
-  _id: Id<"products">;
-  name: string;
-  slug: string;
-  basePrice: number;
-  discountedPrice: number;
-  discountAmount: number;
-  campaignName: string | null;
-  averageRating: number;
-  totalRatings: number;
-  media: ProductMedia[];
-  tags?: Array<{ _id: string; name: string; slug: string }>;
-}
-
-async function withImageUrls(products: RawProduct[]) {
-  const storageIds = products
-    .map((p) => p.media[0]?.storageId)
-    .filter((id): id is Id<"_storage"> => Boolean(id));
-
-  const urls =
-    storageIds.length > 0
-      ? await fetchAuthQuery(api.files.getUrls, { storageIds })
-      : [];
-
-  const urlMap = new Map<string, string | null>();
-  storageIds.forEach((id, index) => {
-    urlMap.set(id as string, urls[index] ?? null);
-  });
-
-  return products.map((p) => ({
-    ...p,
-    imageUrl: p.media[0]?.storageId
-      ? (urlMap.get(p.media[0].storageId as string) ?? null)
-      : null,
-  }));
-}
-
-export default async function HomePage() {
-  const [rawBestSellers, rawNewArrivals] = await Promise.all([
-    fetchAuthQuery(api.products.getFeaturedBestSellers, {}),
-    fetchAuthQuery(api.products.getFeaturedNewArrivals, {}),
-  ]);
-
-  const [bestSellers, newArrivals] = await Promise.all([
-    withImageUrls(rawBestSellers as RawProduct[]),
-    withImageUrls(rawNewArrivals as RawProduct[]),
-  ]);
-
+export default function HomePage() {
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -108,17 +50,6 @@ export default async function HomePage() {
         </p>
       </section>
 
-      {/* Best Sellers */}
-      <div className="border-b border-border">
-        <Suspense fallback={<div className="py-24 text-center text-muted-foreground text-sm">Loading...</div>}>
-          <ProductCarousel
-            products={bestSellers}
-            title="Best Sellers"
-            viewAllHref="/products"
-          />
-        </Suspense>
-      </div>
-
       {/* Lifestyle Banner */}
       <section className="w-full relative overflow-hidden bg-black" style={{ minHeight: "480px" }}>
         <img
@@ -141,17 +72,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-
-      {/* New Arrivals */}
-      <div className="border-b border-border">
-        <Suspense fallback={<div className="py-24 text-center text-muted-foreground text-sm">Loading...</div>}>
-          <ProductCarousel
-            products={newArrivals}
-            title="New Arrivals"
-            viewAllHref="/products?tag=new-arrivals"
-          />
-        </Suspense>
-      </div>
 
       {/* Feature Highlight Grid */}
       <section className="w-full py-16 px-6 lg:px-10 border-b border-border">

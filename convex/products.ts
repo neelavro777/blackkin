@@ -191,50 +191,6 @@ export const getById = query({
   },
 });
 
-/** Landing page: up to 12 best sellers by sortOrder from recommendations table */
-export const getFeaturedBestSellers = query({
-  args: {},
-  returns: v.array(productWithPricingValidator),
-  handler: async (ctx) => {
-    const recs = await ctx.db
-      .query("productRecommendations")
-      .withIndex("by_type", (q) => q.eq("type", "best_sellers"))
-      .order("asc")
-      .take(12);
-
-    const products = await Promise.all(
-      recs.map(async (rec) => {
-        const product = await ctx.db.get(rec.recommendedProductId);
-        if (!product || !product.isActive) return null;
-        return enrichProduct(ctx, product);
-      })
-    );
-    return products.filter(Boolean) as Awaited<ReturnType<typeof enrichProduct>>[];
-  },
-});
-
-/** Landing page: up to 12 new arrivals by sortOrder from recommendations table */
-export const getFeaturedNewArrivals = query({
-  args: {},
-  returns: v.array(productWithPricingValidator),
-  handler: async (ctx) => {
-    const recs = await ctx.db
-      .query("productRecommendations")
-      .withIndex("by_type", (q) => q.eq("type", "new_arrivals"))
-      .order("asc")
-      .take(12);
-
-    const products = await Promise.all(
-      recs.map(async (rec) => {
-        const product = await ctx.db.get(rec.recommendedProductId);
-        if (!product || !product.isActive) return null;
-        return enrichProduct(ctx, product);
-      })
-    );
-    return products.filter(Boolean) as Awaited<ReturnType<typeof enrichProduct>>[];
-  },
-});
-
 /** Check if a slug is available (for inline validation on product forms) */
 export const checkSlugAvailable = query({
   args: {

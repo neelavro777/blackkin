@@ -7,7 +7,6 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
@@ -18,7 +17,7 @@ import { RowActionsMenu } from "@/components/admin/RowActionsMenu";
 
 // ─── Types ────────────────────────────────────────────────────
 
-type RecType = "best_sellers" | "new_arrivals" | "also_like" | "also_bought";
+type RecType = "also_like" | "also_bought";
 
 // ─── Page ─────────────────────────────────────────────────────
 
@@ -28,24 +27,16 @@ export default function RecommendationsPage() {
       <div>
         <h1 className="text-2xl font-semibold">Recommendations</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Manage product recommendations. Best Sellers and New Arrivals show on the homepage (top 3 displayed). Also Like shows on product pages. Also Bought shows at checkout.
+          Manage product recommendations. Also Like shows on product pages. Also Bought shows at checkout.
         </p>
       </div>
 
-      <Tabs defaultValue="best_sellers">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-          <TabsTrigger value="best_sellers">Best Sellers</TabsTrigger>
-          <TabsTrigger value="new_arrivals">New Arrivals</TabsTrigger>
+      <Tabs defaultValue="also_like">
+        <TabsList className="grid grid-cols-2 w-full max-w-sm">
           <TabsTrigger value="also_like">Also Like</TabsTrigger>
           <TabsTrigger value="also_bought">Also Bought</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="best_sellers" className="mt-4">
-          <RecSection type="best_sellers" showTop3Badge />
-        </TabsContent>
-        <TabsContent value="new_arrivals" className="mt-4">
-          <RecSection type="new_arrivals" showTop3Badge />
-        </TabsContent>
         <TabsContent value="also_like" className="mt-4">
           <RecSection type="also_like" />
         </TabsContent>
@@ -61,17 +52,14 @@ export default function RecommendationsPage() {
 
 function RecSection({
   type,
-  showTop3Badge = false,
   showForSize = false,
 }: {
   type: RecType;
-  showTop3Badge?: boolean;
   showForSize?: boolean;
 }) {
   const recs = useQuery(api.recommendations.listByType, { type });
   const sizes = useQuery(api.platformConfig.listSizes);
 
-  const addAtTop = useMutation(api.recommendations.addAtTop);
   const addRec = useMutation(api.recommendations.add);
   const removeRec = useMutation(api.recommendations.remove);
   const reorder = useMutation(api.recommendations.reorder);
@@ -81,8 +69,6 @@ function RecSection({
   const [adding, setAdding] = useState(false);
   const [reordering, setReordering] = useState(false);
 
-  const isFeaturedType = type === "best_sellers" || type === "new_arrivals";
-
   async function handleAdd() {
     if (!selectedProduct) {
       toast.error("Select a product first");
@@ -90,18 +76,11 @@ function RecSection({
     }
     setAdding(true);
     try {
-      if (isFeaturedType) {
-        await addAtTop({
-          type: type as "best_sellers" | "new_arrivals",
-          recommendedProductId: selectedProduct.id,
-        });
-      } else {
-        await addRec({
-          type,
-          recommendedProductId: selectedProduct.id,
-          forSize: showForSize && forSize !== "_all" ? forSize : undefined,
-        });
-      }
+      await addRec({
+        type,
+        recommendedProductId: selectedProduct.id,
+        forSize: showForSize && forSize !== "_all" ? forSize : undefined,
+      });
       toast.success(`Added "${selectedProduct.name}"`);
       setSelectedProduct(null);
     } catch (e: unknown) {
@@ -139,9 +118,7 @@ function RecSection({
       {/* Add form */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            {isFeaturedType ? "Add to top of section" : "Add recommendation"}
-          </CardTitle>
+          <CardTitle className="text-sm">Add recommendation</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-3 items-end flex-wrap">
@@ -201,17 +178,10 @@ function RecSection({
             renderItem={(rec, dragHandle) => (
               <div className="flex items-center gap-3 px-4 py-3 bg-background">
                 {dragHandle}
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{rec.productName}</p>
-                    {rec.forSize && (
-                      <p className="text-xs text-muted-foreground">Size: {rec.forSize}</p>
-                    )}
-                  </div>
-                  {showTop3Badge && rec.sortOrder <= 2 && (
-                    <Badge variant="secondary" className="text-xs shrink-0">
-                      Shown on homepage
-                    </Badge>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{rec.productName}</p>
+                  {rec.forSize && (
+                    <p className="text-xs text-muted-foreground">Size: {rec.forSize}</p>
                   )}
                 </div>
                 <RowActionsMenu

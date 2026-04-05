@@ -121,13 +121,10 @@ export default defineSchema({
 
   // ─── PRODUCT RECOMMENDATIONS (admin-selected, GLOBAL) ────
   // "also_like" shows on ALL product pages. "also_bought" shows at checkout filtered by size.
-  // "best_sellers" and "new_arrivals" show on landing page (top 3 by sortOrder).
   productRecommendations: defineTable({
     type: v.union(
       v.literal("also_like"),
-      v.literal("also_bought"),
-      v.literal("best_sellers"),
-      v.literal("new_arrivals")
+      v.literal("also_bought")
     ),
     recommendedProductId: v.id("products"),
     forSize: v.optional(v.string()), // null = all sizes; "M" = only when M is in cart
