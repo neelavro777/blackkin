@@ -15,6 +15,7 @@ import type * as categories from "../categories.js";
 import type * as dashboard from "../dashboard.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
+import type * as landingPage from "../landingPage.js";
 import type * as lib_aggregates from "../lib/aggregates.js";
 import type * as lib_discounts from "../lib/discounts.js";
 import type * as orders from "../orders.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   dashboard: typeof dashboard;
   files: typeof files;
   http: typeof http;
+  landingPage: typeof landingPage;
   "lib/aggregates": typeof lib_aggregates;
   "lib/discounts": typeof lib_discounts;
   orders: typeof orders;

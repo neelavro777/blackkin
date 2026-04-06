@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { QuoteCarousel } from "@/components/QuoteCarousel";
+import { ProductShowcase } from "@/components/ProductShowcase";
 import { fetchAuthQuery } from "@/lib/auth-server";
 import { api } from "@/convex/_generated/api";
 
@@ -23,6 +24,10 @@ export default async function HomePage() {
   const tech2Src      = content?.images.tech2            ?? "/3imagesection2.png";
   const tech3Src      = content?.images.tech3            ?? "/3imagesection3.png";
   const quotes        = content?.quotes                  ?? [];
+
+  // Dynamic product showcase sections (null-safe; only rendered when active & has products)
+  const productSection1 = content?.productSections?.find((s) => s.position === 1) ?? null;
+  const productSection2 = content?.productSections?.find((s) => s.position === 2) ?? null;
 
   return (
     <div className="min-h-screen">
@@ -65,6 +70,14 @@ export default async function HomePage() {
           &ldquo;We Believe That What You Wear Closest To Your Skin Should Be Your Most Considered Choice.&rdquo;
         </p>
       </section>
+
+      {/* Product Showcase Section 1 — below "Crafted for the Modern Man" */}
+      {productSection1 && productSection1.products.length > 0 && (
+        <ProductShowcase
+          heading={productSection1.heading}
+          products={productSection1.products}
+        />
+      )}
 
       {/* Lifestyle Banner */}
       <section className="w-full h-screen relative overflow-hidden bg-black">
@@ -113,6 +126,14 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {/* Product Showcase Section 2 — below the split section */}
+      {productSection2 && productSection2.products.length > 0 && (
+        <ProductShowcase
+          heading={productSection2.heading}
+          products={productSection2.products}
+        />
+      )}
 
       {/* Premium Comfort Technology */}
       <section className="w-full bg-white border-t border-border">
