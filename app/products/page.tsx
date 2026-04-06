@@ -19,7 +19,7 @@ import { Id } from "@/convex/_generated/dataModel";
 
 interface ProductMedia {
   storageId: Id<"_storage">;
-  type: "image" | "video";
+  type: "image" | "video" | "model3d";
   sortOrder: number;
 }
 
@@ -38,10 +38,10 @@ interface ListProduct {
 }
 
 function ProductCardWithImage({ product }: { product: ListProduct }) {
-  const storageId = product.media[0]?.storageId;
+  const firstImage = product.media.find((m) => m.type === "image");
   const imageUrl = useQuery(
     api.files.getUrl,
-    storageId ? { storageId } : "skip"
+    firstImage ? { storageId: firstImage.storageId } : "skip"
   );
 
   return <ProductCard product={product} imageUrl={imageUrl ?? null} />;
