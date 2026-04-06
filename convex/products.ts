@@ -10,7 +10,7 @@ import { Doc, Id } from "./_generated/dataModel";
 
 const mediaItemValidator = v.object({
   storageId: v.id("_storage"),
-  type: v.union(v.literal("image"), v.literal("video")),
+  type: v.union(v.literal("image"), v.literal("video"), v.literal("model3d")),
   sortOrder: v.number(),
 });
 

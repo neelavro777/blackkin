@@ -65,7 +65,7 @@ export default defineSchema({
     media: v.array(
       v.object({
         storageId: v.id("_storage"),
-        type: v.union(v.literal("image"), v.literal("video")),
+        type: v.union(v.literal("image"), v.literal("video"), v.literal("model3d")),
         sortOrder: v.number(),
       })
     ),
@@ -276,4 +276,26 @@ export default defineSchema({
     author: v.string(),
     isActive: v.boolean(),
   }).index("by_isActive", ["isActive"]),
+
+  // ─── LANDING PAGE PRODUCT SECTIONS ────────────────────────
+  // Two configurable product showcase sections (position 1 & 2).
+  // Each has a heading and an ordered list of selected products.
+  // Only shown on the landing page when isActive is true.
+  landingPageProductSections: defineTable({
+    position: v.union(v.literal(1), v.literal(2)), // 1 = below "Crafted for the Modern Man", 2 = below split section
+    heading: v.string(),
+    isActive: v.boolean(),
+  })
+    .index("by_position", ["position"])
+    .index("by_isActive", ["isActive"]),
+
+  // Individual products selected for each product section.
+  landingPageProductSectionItems: defineTable({
+    sectionId: v.id("landingPageProductSections"),
+    productId: v.id("products"),
+    sortOrder: v.number(),
+  })
+    .index("by_sectionId", ["sectionId"])
+    .index("by_sectionId_and_sortOrder", ["sectionId", "sortOrder"])
+    .index("by_sectionId_and_productId", ["sectionId", "productId"]),
 });
