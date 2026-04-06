@@ -285,9 +285,11 @@ export default defineSchema({
     position: v.union(v.literal(1), v.literal(2)), // 1 = below "Crafted for the Modern Man", 2 = below split section
     heading: v.string(),
     isActive: v.boolean(),
+    tagId: v.optional(v.id("tags")),
   })
     .index("by_position", ["position"])
-    .index("by_isActive", ["isActive"]),
+    .index("by_isActive", ["isActive"])
+    .index("by_tagId", ["tagId"]),
 
   // Individual products selected for each product section.
   landingPageProductSectionItems: defineTable({
@@ -297,5 +299,6 @@ export default defineSchema({
   })
     .index("by_sectionId", ["sectionId"])
     .index("by_sectionId_and_sortOrder", ["sectionId", "sortOrder"])
-    .index("by_sectionId_and_productId", ["sectionId", "productId"]),
+    .index("by_sectionId_and_productId", ["sectionId", "productId"])
+    .index("by_productId", ["productId"]),
 });
