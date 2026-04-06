@@ -501,6 +501,18 @@ export const remove = mutation({
       }
     }
 
+    // Delete landing page section items for this product
+    done = false;
+    while (!done) {
+      const sectionItems = await ctx.db
+        .query("landingPageProductSectionItems")
+        .withIndex("by_productId", (q) => q.eq("productId", args.id))
+        .take(64);
+      if (sectionItems.length === 0) { done = true; } else {
+        await Promise.all(sectionItems.map((si) => ctx.db.delete(si._id)));
+      }
+    }
+
     // Remove from any recommendation sections
     done = false;
     while (!done) {
