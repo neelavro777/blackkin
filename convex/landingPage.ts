@@ -448,14 +448,22 @@ export const setTagForSection = mutation({
     // Set the new tag
     await ctx.db.patch(sectionId, { tagId });
 
-    // Populate items from all products with this tag
+    // Populate items from products with this tag (capped at 50 for transaction safety)
     const productTagRows = await ctx.db
       .query("productTags")
       .withIndex("by_tagId", (q) => q.eq("tagId", tagId))
-      .collect();
+      .take(50);
+
+    // Deduplicate by productId (guard against duplicate productTags rows)
+    const seenProductIds = new Set<string>();
+    const uniqueProductTagRows = productTagRows.filter((pt) => {
+      if (seenProductIds.has(pt.productId)) return false;
+      seenProductIds.add(pt.productId);
+      return true;
+    });
 
     await Promise.all(
-      productTagRows.map((pt, index) =>
+      uniqueProductTagRows.map((pt, index) =>
         ctx.db.insert("landingPageProductSectionItems", {
           sectionId,
           productId: pt.productId,
